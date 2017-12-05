@@ -1,6 +1,53 @@
-@import "~global/common.less";
+// 嘤嘤嘤！
+@import "~global/var-mobile.less";
+@import "~global/mixins.less";
 
-body{
-    // background: url('@{pimg}/1.png');
-    // .dpr(@fs1);
+.main {
+    word-wrap: break-word;
+    position: fixed;
+    height: 0;
+    width: 0;
+    top:0;
+    left:0;
+    background: rgba(255, 255, 255, 1);
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    z-index:1000000;
+    &__show {
+        overflow: auto;
+        height: 100%;
+        width: 100%;
+    }
+};
+.button-secondary {
+    color: #fff;
+    background: rgb(66, 184, 221); /* this is a light blue */
+}
+// 导航
+.nav {
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+    li{
+        margin: @u*2;
+    }
+}
+.box {
+    
+}
+// Fixed
+.fixed {
+    position: fixed;
+    right: 5%;
+    top: 5%;
+    height: @u*100;
+    width: @u*100;
+    min-height: 50px;
+    min-width: 50px;
+    background: rgba(253, 189, 0, 0.4);
+    border-radius: 50%;
+    z-index:1000001;
+    border: 1px solid #fff;
 }

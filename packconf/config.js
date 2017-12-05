@@ -4,7 +4,7 @@ const paths = require('path');
 
 const itemWebConfig = {
     go: paths.resolve(__dirname, 'webpackConfig.js'),
-    build: paths.resolve(__dirname, 'webpackConfig-build.js'),
+    build: paths.resolve(__dirname, 'webpackConfig-build.js')
 };
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -48,7 +48,24 @@ function Last({ data, build, path, userConfig, packPath }) {
     /**
      * ------------------------------------------------
      * */
-
+    data.module.rules[1] = {
+        test: /\.less$/,
+        exclude: /node_modules/,
+        use: [
+            'style-loader',
+            'css-loader?modules',
+            'less-loader'
+        ]
+    };
+    // data.module.rules.push({
+    //     test: /\.css$/,
+    //     exclude: /node_modules/,
+    //     use: [
+    //         'style-loader',
+    //         'css-loader?modules'
+    //     ]
+    // });
+    // console.log(data.module.rules);
     // data.externals[] = '';
     // 添加目录拷贝
     const _copyList = Copy(path, build);
@@ -56,8 +73,8 @@ function Last({ data, build, path, userConfig, packPath }) {
         data.plugins.push(_copyList);
     }
 
-    // data.output.library = '[name]'; // 输出到全局的名称
-    // data.output.libraryTarget = 'umd'; // 输出方式
+    data.output.library = 'debugTool'; // 输出到全局的名称
+    data.output.libraryTarget = 'umd'; // 输出方式
     return data;
 }
 
