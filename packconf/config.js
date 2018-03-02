@@ -67,6 +67,7 @@ function Last({ data, build, path, userConfig, packPath }) {
     // });
     // console.log(data.module.rules);
     // data.externals[] = '';
+    delete data.externals.jquery;
     // 添加目录拷贝
     const _copyList = Copy(path, build);
     if (_copyList) {

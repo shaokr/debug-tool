@@ -5,6 +5,7 @@ export default class NewDom {
     constructor(data = 'div') {
         this.dom = document.createElement(data);
     }
+    // 设置html
     html = (data) => {
         this.dom.innerHTML = '';
         if (_.isString(data)) {
@@ -14,11 +15,14 @@ export default class NewDom {
         }
         return this;
     }
+    // 设置点击事件
     onClick = (ck) => {
         this.dom.addEventListener('click', ck);
         return this;
     }
+    // 触发点击事件
     click = () => this.dom.click()
+    // jq那种的嗯哼
     hasClass(www) {
         const _classNameList = this.className.split(' ');
         const classNameList = www.split(' ');
@@ -33,6 +37,7 @@ export default class NewDom {
         });
         this.class(_classNameList);
     }
+    // jq那种的嗯哼
     append(dom) {
         if (_.isElement(dom)) {
             this.dom.appendChild(dom);
@@ -41,9 +46,11 @@ export default class NewDom {
         }
         return this;
     }
+    // 查看样式
     get className() {
         return this.dom.className;
     }
+    // 设置样式
     class(className) {
         if (_.isString(className)) {
             this.dom.className = className;
@@ -51,5 +58,9 @@ export default class NewDom {
             this.dom.className = classnames(className);
         }
         return this;
+    }
+    // 设置各种属性
+    setattribute = (...arrt) => {
+        this.dom.setAttribute(...arrt);
     }
 }

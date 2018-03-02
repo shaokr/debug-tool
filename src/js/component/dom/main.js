@@ -1,37 +1,50 @@
 
 import _ from 'lodash';
-import Dom from 'helpers/dom';
+import $ from 'jquery';
 
 import { main as logMain } from 'component/log'; // log组件
+import { main as dataChannelMain } from 'component/data-channel'; // log组件
 
 import pure from 'less/pure.less'; // 样式
 import css from 'less/pages/index.less'; // 样式
 
-const Debug = new Dom();
-Debug.class(css.main);
+const Debug = $(`<div class="${css.main}" />`);
 
-const Box = new Dom();
+const Box = $(`<div />`);
 
-const Ul = new Dom('ul');
-Ul.class(css.nav);
+const Ul = $(`<ul class="${css.nav}" />`);
+
 const liConfig = [
+    {
+        title: '刷新页面', // 名称
+        onClick() { // 点击事件
+            window.location.reload(true);
+        }
+    },
     {
         title: '打印', // 名称
         default: true,
         onClick() { // 点击事件
             Box.html(logMain);
         }
+    },
+    {
+        title: '远程数据通讯', // 名称
+        onClick() { // 点击事件
+            Box.html(dataChannelMain);
+        }
     }
 ];
 
-const liList = _.map(liConfig, (item) => {
-    const Li = new Dom('li');
-    const onClick = (e) => {
-        _.forEach(liList, (val) => { val.class(pure['pure-button']); });
-        Li.class([pure['pure-button'], css['button-secondary']]);
-        item.onClick(e);
-    };
-    Li.html(item.title).class(pure['pure-button']).onClick(onClick);
+_.forEach(liConfig, (item) => {
+    const Li = $(`<li class=${pure['pure-button']}/>`);
+    Li
+        .html(item.title)
+        .on('click', (e) => {
+            $('>li', Ul).removeClass(css['button-secondary']);
+            Li.addClass(css['button-secondary']);
+            item.onClick(e);
+        });
     if (item.default) {
         Li.click();
     }
@@ -39,9 +52,8 @@ const liList = _.map(liConfig, (item) => {
     return Li;
 });
 
-Debug.append(Ul);
-Debug.append(Box);
+Debug.append(Ul, Box);
 
-export const has = () => Debug.hasClass(css.main__show);
+export const has = () => Debug.toggleClass(css.main__show);
 
 export default Debug;

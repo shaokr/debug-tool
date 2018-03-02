@@ -20,7 +20,7 @@ const mapListObj = { // 自定义map和依赖关系,可覆盖cdn中的配置(注
 
 
 const mainListObj = { // 载入文件的配置
-    '_index': { // 入口文件 签名
+    _index: { // 入口文件 签名
         ToLoad: true, // 是否马上加载
          // 依赖库
         deps: ['flexible']

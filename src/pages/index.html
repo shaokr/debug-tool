@@ -6,7 +6,47 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 	<meta http-equiv="Cache-Control" content="no-cache" />
 	<!--<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">-->
+	<!-- <script src="//192.168.1.251:8282/fed/web-cdn/js/socket.io-client/0.9.16/socket.io.min.js"></script>
+	<script src="//192.168.1.251:8282/fed/web-cdn/js/signaler/1.0.2/signaler.js"></script>
+	<script src="//192.168.1.251:8282/fed/web-cdn/js/data-channel/1.0.0/DataChannel.js"></script> -->
+	<!-- <script>
+			window.channel = new DataChannel();
+			var signaler = initReliableSignaler(channel, 'http://192.168.1.252:9999/');
+			console.log(channel, signaler);
+			channel.onopen = function (userid) {
+				console.log(userid);
+			};
+			channel.onmessage = function (message, userid) {
+				console.log(message, userid);
+			};
 	
+			channel.onleave = function (userid) {
+				console.log(userid);
+			};
+			function ceOpen(roomid) {			
+				signaler.createNewRoomOnServer(roomid, function() {
+					channel.userid = roomid;
+					channel.transmitRoomOnce = true;
+					channel.open(roomid);
+				});
+			};
+	
+			function ceJoin(roomid) {
+				signaler.getRoomFromServer(roomid, function(roomid) {
+					channel.connect(roomid); // setting 'channel' & connecting socket
+					
+					// setting 'roomToken' and 'broadcaster' and joining
+					channel.join({
+						id: roomid,
+						owner: roomid
+					});
+				});
+			};
+			// search for existing data channels
+			// channel.connect();
+			// channel.open('111111');
+			// channel.send(file || data || 'text-message');
+		</script> -->
 </head>
 <body>
 	
