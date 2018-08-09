@@ -15,6 +15,9 @@ const param = (() => {
     }
     return args;
 })();
-param.debug = param.debug || window.debug;
+const debug = param.debug || window.debug;
+if (typeof debug !== 'undefined') {
+    param.debug = debug;
+}
 
 export default param;
