@@ -50,13 +50,16 @@ import email from 'less/email.less'; // 样式
 export const main = $(`<div class="${pure['pure-form']} ${pure['pure-form-aligned']}" />`);
 // <input id="ch-user" type="text" placeholder="用户名">
 main.html(`
-    <label for="email">信命服务器(https://github.com/muaz-khan/Reliable-Signaler/tree/master/datachannel-client)</label>
+    <a id="ch-qr" href="">
+        <img width="300" height="300" src="">
+    </a>
     <br/>
-    <input id="ch-url" type="text" placeholder="信命服务器地址" value="http://192.168.1.96:8088/"  >
+    <label for="email">信命服务器(<a href="https://github.com/muaz-khan/Reliable-Signaler/tree/master/datachannel-client" target="_blank" >https://github.com/muaz-khan/Reliable-Signaler/tree/master/datachannel-client</a>)</label>
+    <br/>
+    <input id="ch-url" type="text" placeholder="信命服务器地址" value="${param.debugToolDataChannelUrl || 'http://192.168.1.252:9999/'}"  >
     <br/>
     
     <div class="${pure['pure-control-group']}">
-        <img id="ch-qr" src="">
         <input id="ch-room" type="text" placeholder="房间号" value="${param.debugToolDataChannelId || +new Date()}">
         <button id="ch-join" class="${pure['pure-button']}">加入房间</button>
     </div>
@@ -85,27 +88,34 @@ const itemAssign = fp.assign({
 const $url = $('#ch-url', main);
 const $qr = $('#ch-qr', main);
 const $room = $('#ch-room', main);
-const $create = $('#ch-create', main);
 const $join = $('#ch-join', main);
 const $text = $('#ch-text', main);
 const $send = $('#ch-send', main);
 
 const $log = $('#ch-log', main);
 
-$room.on('change', () => {
+$([$url[0], $room[0]]).on('change', () => {
     const val = $room.val();
+    const url = $url.val();
     const text = createUrlParams({
-        debugToolDataChannelId: val
-    }, location.href);
-    console.log(text);
-    $qr.attr('src', `http://qr.liantu.com/api.php?text=${encodeURIComponent(text)}`);
+        ...param,
+        debugToolDataChannelId: val,
+        debugToolDataChannelUrl: url
+    }, `${window.location.origin}${window.location.pathname}${window.location.hash}`);
+    const src = createUrlParams({
+        text
+    }, 'http://qr.liantu.com/api.php');
+    $qr.attr('href', text).find('img').attr('src', '').attr('src', src);
 }).change();
-
+const onOpen = new Monitor(); // 某用户加入房间
+const onMessage = new Monitor(); // 来新消息啦
+const onLeave = new Monitor(); // 某用户退出了房间
+const onClose = new Monitor();
 class Omg {
-    onOpen = new Monitor() // 某用户加入房间
-    onMessage = new Monitor() // 来新消息啦
-    onLeave = new Monitor() // 某用户退出了房间
-    onClose = new Monitor()
+    onOpen = onOpen
+    onMessage = onMessage
+    onLeave = onLeave
+    onClose = onClose
     constructor(url) {
         const { DataChannel } = window;
         this.channel = new DataChannel();
@@ -115,53 +125,60 @@ class Omg {
     userType = _.curry((ck, obj) => {
         const { channel } = this;
         if (obj.name === channel.userid) {
-            obj.name = '你';
+            obj.name = `你(${channel.userid})`;
             obj.unread = 'email-item-unread';
         } else if (obj.name === channel.channel) {
-            obj.name = '房主大佬';
+            obj.name = `房主大佬(${channel.channel})`;
         }
-        return ck(obj);
+        return $log.prepend(ck(obj));
     }, 2)(_.flow([itemAssign, itemStr]))
     init = () => {
         const { channel, userType } = this;
         channel.onopen = this.onOpen.go;
-        channel.onmessage = (data, userId) => this.onMessage.go({ data, userId });
+        channel.onmessage = (data, userId) => this.onMessage.go({ data, userId, isThis: channel.userid === userId, isOwner: channel.userid === channel.channel });
         channel.onleave = this.onLeave.go;
         channel.onclose = this.onLeave.go;
 
         this.onOpen.on((userId) => {
-            $log.append(userType({
+            userType({
                 name: userId,
                 subject: '加入房间'
-            }));
+            });
         });
         this.onMessage.on(({ data, userId }) => {
-            $log.append(userType({
+            userType({
                 name: userId,
                 text: JSON.stringify(data, undefined, 2)
-            }));
+            });
         });
         this.onLeave.on((userId) => {
             if (fp.isString(userId)) {
-                $log.append(userType({
+                userType({
                     name: userId,
                     subject: '离开房间'
-                }));
+                });
             }
-            
         });
         this.onClose.on(() => {
-            $log.append(userType({
+            userType({
                 name: '系统通知',
                 subject: '出错啦!',
                 text: '可能是房主大佬断了(不影响已在用户使用'
-            }));
+            });
         });
     }
     // 创建房间
     create = (roomid, name) => {
         const { signaler, channel, userType } = this;
+        const w = setTimeout(() => {
+            userType({
+                name: '系统通知',
+                subject: '加入失败',
+                text: '请查看信令服务器是否正常!'
+            });
+        }, 1000);
         signaler.createNewRoomOnServer(roomid, () => {
+            clearTimeout(w);
             $log.append(userType({
                 name: '系统通知',
                 subject: '加入房间成功(然后你变成了大佬！'
@@ -195,33 +212,36 @@ class Omg {
     send = (data) => {
         const { channel } = this;
         channel.send(data);
-        this.onMessage.go({ data, userId: channel.userid });
+        this.userType({
+            name: channel.userid,
+            text: JSON.stringify(data, undefined, 2)
+        });
+        
     }
 }
-
-$create.on('click', () => {
-    const url = $url.val();
-    const o = new Omg(url);
-    const roomid = $room.val();
-    // const userName = $user.val();
-    o.create(roomid);
-    $send.on('click', () => {
-        o.send($text.val());
-    });
-});
-
+let _omg = false;
 $join.on('click', () => {
     const url = $url.val();
-    const o = new Omg(url);
+    _omg = new Omg(url);
     const roomid = $room.val();
     // const userName = $user.val();
-    o.join(roomid);
+    _omg.join(roomid);
     $send.on('click', () => {
-        o.send($text.val());
+        _omg.send($text.val());
     });
 });
 if (param.debugToolDataChannelId) {
     $join.click();
 }
 
-export default {};
+export default {
+    onOpen,
+    onMessage,
+    onLeave,
+    onClose,
+    send(data) {
+        if (_omg) {
+            _omg.send(data);
+        }
+    }
+};
